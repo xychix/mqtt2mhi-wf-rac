@@ -6,7 +6,7 @@ Based on theawesomestrob/mitsubishi-wf-rac an similar to my heidelberg-wallbox-c
 
 Values are published to MQTT and are easy integratable into openHAB and other Smart Home Systems.
 
-### Currently the follwing Values are published
+### Currently the follwing Values from the Inverters are published to MQTT
 
 - power_status
 - preset_temperatur
@@ -16,7 +16,7 @@ Values are published to MQTT and are easy integratable into openHAB and other Sm
 - wind_ud
 - wind_lr
 
-### Currently the follwing Values are read from MQTT and will be written to Wallbox
+### Currently the follwing Values are read from MQTT and will be send to the Invertes
 
 - power_status
 - preset_temperatur
