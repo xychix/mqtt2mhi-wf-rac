@@ -8,19 +8,19 @@ Values are published to MQTT and are easy integratable into openHAB and other Sm
 
 ### Currently the follwing Values are published
 
-power_status
-preset_temperatur
-operation_mode
-airflow
-auto_3d
-wind_ud
-wind_lr
+- power_status
+- preset_temperatur
+- operation_mode
+- airflow
+- auto_3d
+- wind_ud
+- wind_lr
 
 ### Currently the follwing Values are read from MQTT and will be written to Wallbox
 
-power_status
-preset_temperatur
-airflow
+- power_status
+- preset_temperatur
+- airflow
 
 ### requirements
 
