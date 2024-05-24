@@ -320,7 +320,7 @@ def get_status(args):
     def print_hex(bs):
         print(' '.join('%02x' % b for b in bs))
 
-    print_hex(blob)
+    #print_hex(blob)
 
     #print(repr(blob))
     #print(len(blob))
@@ -331,7 +331,7 @@ def get_status(args):
 
     chunk1 = blob[offset:end]  # r5
 
-    print_hex(chunk1)
+    #print_hex(chunk1)
 
     #print(repr(chunk1))
 
@@ -343,7 +343,7 @@ def get_status(args):
     settings = Settings(r['contents']['airconId'])
     settings.set_from_bytes(chunk1)
 
-    print(settings)
+    #print(settings)
 
 
     v = chunk1[6] & 127
@@ -353,7 +353,7 @@ def get_status(args):
         error_code = "M%02d" % int(v)
     else:
         error_code = "E%s" % str(v)
-    print("Error code: %r" % error_code)
+    #print("Error code: %r" % error_code)
 
 
     p = 0
@@ -366,15 +366,15 @@ def get_status(args):
         v4 = chunk2[y+3] # r11
         if v1 == 128 and v2 == 16:
             outdoor_temp = constants.OUTDOOR_TEMPS[v3 & 255]
-            print("Outdoor Temp: %r" % outdoor_temp)
+            #print("Outdoor Temp: %r" % outdoor_temp)
         else:
             if v1 == 128 and v2 == 32:
                 indoor_temp = constants.INDOOR_TEMPS[v3 & 255]
-                print("Indoor Temp: %r" % indoor_temp)
+                #print("Indoor Temp: %r" % indoor_temp)
             else:
                 if v1 == 148 and v2 == 16:
                     electric = float((v4 & 255) << 8 + (v3 & 255)) * 0.25
-                    print("Electric: %r" % electric)
+                    #print("Electric: %r" % electric)
                 else:
                     home_leave_mode_for_cooling = 0
                     home_leave_mode_for_heating = 0
@@ -428,7 +428,7 @@ def set_status(args):
     updated_settings = Settings(r['contents']['airconId'])
     updated_settings.set_from_bytes(blob[offset:end])
 
-    print(f"Updated settings:\n{updated_settings}")
+    #print(f"Updated settings:\n{updated_settings}")
 
 class RegistrationFailed(Exception):
     pass
