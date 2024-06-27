@@ -298,7 +298,7 @@ def call_aircon_command(aircon_ip, command, contents=None):
     #print("posting to %r" % url)
     #print("data: %r" % data)
 
-    response = requests.post(url, json=data)
+    response = requests.post(url, json=data, timeout=5)
     if response:
         response = response.json()
 
