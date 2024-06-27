@@ -16,7 +16,8 @@ import aircon
 ######################################
 #
 #   V 1.0: 13.05.2024:  Initial Release
-#
+#   V 1.3: 25.06.2024:  Added on_disconnect to handle MQTT disconect events
+
 
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -105,11 +106,11 @@ class GZipRotator:
 #get the root logger
 rootlogger = logging.getLogger()
 #set overall level to debug, default is warning for root logger
-rootlogger.setLevel(logging.INFO)
+rootlogger.setLevel(logging.DEBUG)
 
 #setup logging to file, rotating at midnight
 filelog = logging.handlers.TimedRotatingFileHandler(log_path + general_Config["log_filename"], when='midnight', interval=1, encoding='utf-8')
-filelog.setLevel(logging.INFO)
+filelog.setLevel(logging.DEBUG)
 fileformatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
 filelog.setFormatter(fileformatter)
 filelog.rotator = GZipRotator()
@@ -117,7 +118,7 @@ rootlogger.addHandler(filelog)
 
 #setup logging to console
 console = logging.StreamHandler()
-console.setLevel(logging.INFO)
+console.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
 console.setFormatter(formatter)
 rootlogger.addHandler(console)
@@ -136,14 +137,41 @@ def get_time():
     return now    
 
 def on_connect(client, userdata, flags, rc):
-    logger.debug("Connected with result code " + str(rc))
-    advertize_device()
-    
-    # Subscribing in on_connect() means that if we lose the connection and
-    # reconnect then subscriptions will be renewed.
-    client.subscribe(mqtt_prefix + "#")
+    logger.debug("Connected to MQTT with result code " + str(rc))
+    if rc == 0:
+        logger.debug("Connected to MQTT successfully")
+        client.connected_flag = True
+        advertize_device()
 
+        # Subscribing in on_connect() so that if connection is lost subscription will also be renewed
+        client.subscribe(mqtt_prefix + "#")
+
+    else:
+        logger.error("Connect to MQTT failed with return code: " + str(rc))
+        client.connected_flag = False
+    
+
+# Define the callback for disconnection
+def on_disconnect(client, userdata, rc):
+    logger.debug("Disconnected from MQTT with result code " + str(rc))
+    client.connected_flag = False
+    if rc != 0:
+        print("Unexpected disconnection. Will attempt to reconnect.")
+        client.reconnect_flag = True
             
+
+# Define the callback for reconnection
+def on_reconnect(client, userdata, rc):
+    if rc == 0:
+        logger.info("Successfully reconnected to MQTT")
+        client.connected_flag = True
+        client.reconnect_flag = False
+    else:
+        logger.error("Reconnect to MQTT failed with return code: " + str(rc))
+        client.connected_flag = False
+        client.reconnect_flag = True
+
+
 def advertize_device():
     for inverter in inverters:
         logger.info("Found Inverter config " + inverter.name + " " + inverter.IP)
@@ -224,7 +252,17 @@ def on_message(client, userdata, message):
 # Assign callback function to handle incoming messages
 client.on_message = on_message
 
+# Set the flags to False initially
+client.connected_flag = False
+client.reconnect_flag = False
+
+# Assign the callbacks
 client.on_connect = on_connect
+client.on_disconnect = on_disconnect
+
+# Configure the reconnection settings
+client.reconnect_delay_set(min_delay=1, max_delay=120)
+
 try:
     client.connect(MQTT_Config["broker_IP"], int(MQTT_Config["broker_port"]), 60)
 except:
@@ -264,12 +302,22 @@ def init_args():
 #   Main Loop
 ######################################
 
+
 def loop():
     while True:
         
-        logger.debug("------- Loop Started ---------")
+        logger.debug("------- Loop Iteration Started ---------")
      
         args = init_args()
+
+        # Check if MQTT reconnection is needed
+        if client.reconnect_flag and not client.connected_flag:
+            try:
+                logger.info("Attempting to reconnect MQTT ...")
+                client.reconnect()
+            except Exception as e:
+                logger.error(f"Reconnect attempt failed: {e}")
+
                
         ######################################
         #   Read Values from Inverter
@@ -313,6 +361,9 @@ def loop():
         except:
             raise
 
+        logger.debug("------- Loop Iteration Ended ---------")
+
+        logger.debug("Sleep for " + str(interval) + "s")
         time.sleep(interval)
 
 try:
