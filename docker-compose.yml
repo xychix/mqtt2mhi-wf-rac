@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  klima-connector:
+    container_name: klima-connector
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ./config:/app/klima-connector/config  # Mount config directory for external configuration

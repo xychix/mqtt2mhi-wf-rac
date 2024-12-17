@@ -22,7 +22,7 @@ import aircon
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Construct the path to the configuration file
-config_file_path = os.path.join(script_dir, 'config.ini')
+config_file_path = os.path.join(script_dir, 'config/config.ini')
 
 # Check if the config file exists
 if not os.path.isfile(config_file_path):
