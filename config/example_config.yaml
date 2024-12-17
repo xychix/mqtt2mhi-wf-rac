@@ -1,0 +1,16 @@
+mqtt:
+  broker_ip: "mqtt.example.com"
+  broker_port: 1883
+  broker_user: "<your_user>"
+  broker_password: "<your_password>"
+  mqtt_prefix: "mqtt2mhi/aircon/"
+
+general:
+  log_path: "logs/"
+  log_filename : "klima-connector.log"
+  interval: 60
+
+inverters:
+<inverter 1 name> = <Inverter 1 IP>
+<inverter 2 name> = <Inverter 2 IP>
+<inverter 3 name> = <Inverter 3 IP>

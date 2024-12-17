@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import time
-import locale
 import datetime
 import paho.mqtt.client as mqtt
 import logging
