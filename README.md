@@ -35,3 +35,9 @@ Values are published to MQTT and are easy integratable into openHAB and other Sm
 - edit the config.ini file
 - test `./klima-connector.py`
 - create a systemctl to run the ./klima-connector.py as a service
+
+
+===
+notes:L
+https://github.com/JobDoesburg/homebridge-mhi-wfrac
+getting the ID for in config

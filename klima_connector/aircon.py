@@ -15,6 +15,8 @@ from typing import cast
 import constants
 import config
 
+from logger import app_logger as logger
+
 class AttrBase:
     def __init__(self, name):
         self.name = name
@@ -295,14 +297,14 @@ def call_aircon_command(aircon_ip, command, contents=None):
     if contents:
         data['contents'] = contents
 
-    #print("posting to %r" % url)
-    #print("data: %r" % data)
+    logger.debug("posting to %r" % url)
+    logger.debug("data: %r" % data)
 
     response = requests.post(url, json=data, timeout=5)
     if response:
         response = response.json()
 
-    #print("response: %r" % response)
+    logger.debug("response: %r" % response)
 
     if not response or response.get('result', None) != 0:
         raise Exception(f"Call to {url} failed")
@@ -396,7 +398,7 @@ def get_status(args):
 
 def set_status(args):
     settings = get_status(args)
-    print(f"Current settings:\n{settings}")
+    logger.debug(f"Current settings:\n{settings}")
 
     for arg, setting in [
             (args.temperature, settings.preset_temp),
@@ -408,7 +410,7 @@ def set_status(args):
         if arg is not None:
             setting.set(arg)
 
-    print(f"New settings:\n{settings}")
+    logger.debug(f"New settings:\n{settings}")
 
     payload = base64.b64encode(bytes(settings.to_bytes())).decode('utf-8')
 
@@ -428,7 +430,7 @@ def set_status(args):
     updated_settings = Settings(r['contents']['airconId'])
     updated_settings.set_from_bytes(blob[offset:end])
 
-    #print(f"Updated settings:\n{updated_settings}")
+    logger.debug(f"Updated settings:\n{updated_settings}")
 
 class RegistrationFailed(Exception):
     pass

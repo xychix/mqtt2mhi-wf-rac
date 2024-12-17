@@ -6,4 +6,4 @@ services:
     build: .
     restart: unless-stopped
     volumes:
-      - ./config:/app/klima-connector/config  # Mount config directory for external configuration
+      - ./config:/app/klima_connector/config  # Mount config directory for external configuration

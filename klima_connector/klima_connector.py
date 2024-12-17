@@ -3,9 +3,7 @@
 import time
 import datetime
 import paho.mqtt.client as mqtt
-import logging
-from logging.handlers import TimedRotatingFileHandler
-import gzip
+from logger import app_logger as logger
 import os
 from configparser import ConfigParser
 import argparse
@@ -71,61 +69,6 @@ class Inverter:
 
 # Create a list of Inverter instances
 inverters = [Inverter(name, IP) for name, IP in Inverter_configs]
-    
-
-
-######################################
-#   Logging
-######################################
-
-log_path = general_Config["log_path"]
-
-# Check if log_path is relative and, if so, make it absolute
-if not os.path.isabs(log_path):
-    log_path = os.path.join(script_dir, log_path)
-        
-try:
-    os.makedirs(log_path)
-    print("Logdir " + log_path + " created" )
-      
-except FileExistsError:
-    pass
-    
-
-class GZipRotator:
-    def __call__(self, source, dest):
-        os.rename(source, dest)
-        f_in = open(dest, 'rb')
-        f_out = gzip.open("%s.gz" % dest, 'wb')
-        f_out.writelines(f_in)
-        f_out.close()
-        f_in.close()
-        os.remove(dest)
-
-#get the root logger
-rootlogger = logging.getLogger()
-#set overall level to debug, default is warning for root logger
-rootlogger.setLevel(logging.DEBUG)
-
-#setup logging to file, rotating at midnight
-filelog = logging.handlers.TimedRotatingFileHandler(log_path + general_Config["log_filename"], when='midnight', interval=1, encoding='utf-8')
-filelog.setLevel(logging.DEBUG)
-fileformatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
-filelog.setFormatter(fileformatter)
-filelog.rotator = GZipRotator()
-rootlogger.addHandler(filelog)
-
-#setup logging to console
-console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
-console.setFormatter(formatter)
-rootlogger.addHandler(console)
-
-#get a logger for my script
-logger = logging.getLogger(__name__)
-
-
 
 ######################################
 #    Initialisierung
@@ -175,9 +118,12 @@ def advertize_device():
     for inverter in inverters:
         logger.info("Found Inverter config " + inverter.name + " " + inverter.IP)
         client.publish(mqtt_prefix + inverter.name + "/name", inverter.name, 1, True)
-        
-    
-           
+        # also register user to device
+        args = init_args()
+        # Set IP of received Inverter
+        args.IP = inverter.IP
+        aircon.register(args)
+
 def on_message(client, userdata, message):
      
     if "/set" in message.topic:
@@ -265,7 +211,7 @@ client.reconnect_delay_set(min_delay=1, max_delay=120)
 try:
     client.connect(MQTT_Config["broker_IP"], int(MQTT_Config["broker_port"]), 60)
 except:
-    logger.info("Could not connect to MQTT Broker")  
+    logger.info("Could not connect to MQTT Broker")
 client.loop_start()
 
 
@@ -300,7 +246,6 @@ def init_args():
 ######################################
 #   Main Loop
 ######################################
-
 
 def loop():
     while True:
@@ -355,7 +300,7 @@ def loop():
             
  
         except IOError:
-            logger.error("Reading Inverter failed")  
+            logger.error("Reading Inverter failed")
             time.sleep(interval / 2)
         except:
             raise
