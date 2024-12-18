@@ -442,7 +442,7 @@ def register_with_aircon(aircon_id, aircon_ip):
         contents={
             "accountId": config.MY_OPERATOR_ID,
             "airconId": aircon_id,
-            "remote": 0,
+            "remote": 1,
             "timezone": config.TIMEZONE
         })
 

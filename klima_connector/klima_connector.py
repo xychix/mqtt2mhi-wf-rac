@@ -118,11 +118,11 @@ def advertize_device():
     for inverter in inverters:
         logger.info("Found Inverter config " + inverter.name + " " + inverter.IP)
         client.publish(mqtt_prefix + inverter.name + "/name", inverter.name, 1, True)
-        # also register user to device
-        args = init_args()
-        # Set IP of received Inverter
-        args.IP = inverter.IP
-        aircon.register(args)
+        ## also register user to device
+        #args = init_args()
+        ## Set IP of received Inverter
+        #args.IP = inverter.IP
+        #aircon.register(args)
 
 def on_message(client, userdata, message):
      
